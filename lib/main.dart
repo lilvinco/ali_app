@@ -1,11 +1,14 @@
 library modal_progress_hud;
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:navigation_action_bar/navigation_action_bar.dart';
+import 'package:flutter/services.dart';
+import 'package:share/share.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
-void main() {
+main() {
   runApp(MyApp());
 }
 
@@ -38,6 +41,23 @@ class MyApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
+  pushNotifications() async {
+    //Remove this method to stop OneSignal Debugging
+    OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
+
+    OneSignal.shared.init(
+        "YOUR_ONESIGNAL_APP_ID",
+        iOSSettings: {
+          OSiOSSettings.autoPrompt: false,
+          OSiOSSettings.inAppLaunchUrl: false
+        }
+    );
+    OneSignal.shared.setInFocusDisplayType(OSNotificationDisplayType.notification);
+
+// The promptForPushNotificationsWithUserResponse function will show the iOS push notification prompt. We recommend removing the following code and instead using an In-App Message to prompt for notification permission
+    await OneSignal.shared.promptUserForPushNotificationPermission(fallbackToSettings: true);
+
+  }
   MyHomePage({Key key, this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
@@ -59,51 +79,70 @@ class _MyHomePageState extends State<MyHomePage> {
   var _url = 'https://africanleadershipinstitution.com';
   bool _isLoading = true;
   int currentIndex = 0;
-
   WebViewController controller;
+  var _selectedIndex = 0;
 
   @override
     Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: NavigationActionBar(
-        context: context,
-        accentColor: Colors.teal,
-        scaffoldColor: Colors.black26,
-        index: currentIndex,
-        subItems: [
-          NavBarItem(iconData: Icons.chat, size: 25),
-          NavBarItem(iconData: Icons.assessment, size: 25),
-          NavBarItem(iconData: Icons.more, size: 25),
-          NavBarItem(iconData: Icons.rate_review, size: 25),
-          NavBarItem(iconData: Icons.share, size: 25),
-        ],
-        mainIndex: 2,
-        items: [
-          NavBarItem(iconData: Icons.home, size: 30),
-          NavBarItem(iconData: Icons.dashboard, size: 30),
-          NavBarItem(iconData: Icons.more_vert, size: 40),
-          NavBarItem(iconData: Icons.library_books, size: 30),
-          NavBarItem(iconData: Icons.announcement, size: 30),
-        ],
-        onTap: (index) {
-          if (index != null)
-            _splitScreen(index);
-        },
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        statusBarBrightness: Brightness.dark,
       ),
-            body: SafeArea(
-                child: ProgressHUD(
-                  child: Stack(
-                      children: <Widget>[
-                        WebView(
-                          onWebViewCreated: webViewCreated,
-                          javascriptMode: JavascriptMode.unrestricted,
-                          initialUrl: _url,
-                          onPageFinished: pageFinishedLoading,
-                        ),
-                      ]),
-                  inAsyncCall: _isLoading,
-                  opacity: 0.0,
-                )));
+      child: Scaffold(
+        bottomNavigationBar: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              title: Text('Home'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.library_books),
+              title: Text('Courses'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.chat),
+              title: Text('Blog'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.school),
+              title: Text('Certification'),
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.menu),
+              title: Text('More'),
+            ),
+          ],
+          currentIndex: _selectedIndex,
+          type: BottomNavigationBarType.fixed,
+          selectedFontSize: 12,
+          unselectedFontSize: 10,
+          backgroundColor: Color.fromRGBO(17, 24, 32, 1),
+          selectedItemColor: Color.fromRGBO(23, 208, 207, 1),
+          unselectedItemColor: Color.fromRGBO(169, 163, 163, 1),
+          showUnselectedLabels: true,
+          onTap: (index) {
+            if (index != null){
+              print(index);
+              setState(() => _selectedIndex = index);
+              _splitScreen(index);}
+          },
+        ),
+              body: SafeArea(
+                  child: ProgressHUD(
+                    child: Stack(
+                        children: <Widget>[
+                          WebView(
+                            onWebViewCreated: webViewCreated,
+                            javascriptMode: JavascriptMode.unrestricted,
+                            initialUrl: _url,
+                            onPageFinished: pageFinishedLoading,
+                          ),
+                        ]),
+                    inAsyncCall: _isLoading,
+                    opacity: 0.0,
+                  ))),
+    );
   }
   void pageFinishedLoading(String url) {
     setState(() {
@@ -111,53 +150,70 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
-  void _splitScreen(double i) {
-    switch (i.toString()) {
-      case '0.0':
+   _splitScreen(int i) {
+    switch (i) {
+      case 0:
+        setState(() => _isLoading = true);
         _url = 'https://africanleadershipinstitution.com';
         controller.loadUrl(_url);
         break;
-      case '1.0':
+      case 1:
+        setState(() => _isLoading = true);
+        _url = 'https://africanleadershipinstitution.com/courses';
+        controller.loadUrl(_url);
+        break;
+      case 2:
+        setState(() => _isLoading = true);
         _url = 'https://africanleadershipinstitution.com/user/dashboard';
         controller.loadUrl(_url);
         break;
-      case '3.0':
-        _url = 'https://africanleadershipinstitution.com/courses';
+      case 3:
+        _url = 'https://africanleadershipinstitution.com/user/certifications';
         controller.loadUrl(_url);
         break;
-      case '4.0':
-        _url = 'https://africanleadershipinstitution.com/courses';
-        controller.loadUrl(_url);
-        break;
-      case '2.0':
-        _url = 'https://africanleadershipinstitution.com/blog';
-        controller.loadUrl(_url);
-        break;
-      case '2.1':
-        _url = 'https://africanleadershipinstitution.com/courses';
-        controller.loadUrl(_url);
-        break;
-      case '2.2':
-        _url = 'https://africanleadershipinstitution.com/about-us';
-        controller.loadUrl(_url);
-        break;
-      case '2.3':
-        _url = 'https://africanleadershipinstitution.com/courses';
-        controller.loadUrl(_url);
-        break;
-      case '2.4':
-        _url = 'https://africanleadershipinstitution.com/courses';
-        controller.loadUrl(_url);
+      case 4:
+        print('bbv');
+        final result = showMenu(context: context,
+            position: RelativeRect.fromLTRB(1000.0, 1000.0, 0.0, 0.0),
+            items: <PopupMenuItem<String>>[
+              new PopupMenuItem<String>(
+                  child: const Text('About Us'), value: 'https://africanleadershipinstitution.com/about-us'),
+              /*new PopupMenuItem<String>(
+                  child: const Text('Rate Us'), value: '4.2'),*/
+              new PopupMenuItem<String>(
+                  child: const Text('Share'), value: 'Share'),
+            ],
+            elevation: 20.0);
+        result.then((value) {
+          if(value == 'Share'){
+            Share.share('Join me and 40,000 learners on African Leadership Institute: https://africanleadershipinstitution.com/user/dashboard');
+          }
+          else {
+            print(value);
+            _url = value;
+            controller.loadUrl(_url);
+          }
+        });
         break;
     }
   }
 
   void webViewCreated(WebViewController _controller) {
-    print('fsbndvsad');
     controller = _controller;
-
   }
 }
+class Choice {
+  const Choice({this.title, this.url, this.icon});
+  final String title;
+  final String url;
+  final IconData icon;
+}
+
+const List<Choice> choices = const <Choice>[
+  const Choice(title: 'About Us', url: ''),
+  const Choice(title: 'Rate Us', url: ''),
+  const Choice(title: 'Share', url: ''),
+];
 
 class ProgressHUD extends StatelessWidget {
   final Widget child;
