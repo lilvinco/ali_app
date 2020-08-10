@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ALI Mobile',
+      title: 'ALI Study',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
         // closer together (more dense) than on mobile platforms.
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MyHomePage(title: 'ALI Study'),
     );
   }
 }
@@ -46,7 +46,7 @@ class MyHomePage extends StatefulWidget {
     OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
 
     OneSignal.shared.init(
-        "YOUR_ONESIGNAL_APP_ID",
+        "9241b337-a04a-4618-9e70-a87e7b88b16e",
         iOSSettings: {
           OSiOSSettings.autoPrompt: false,
           OSiOSSettings.inAppLaunchUrl: false
@@ -81,13 +81,15 @@ class _MyHomePageState extends State<MyHomePage> {
   int currentIndex = 0;
   WebViewController controller;
   var _selectedIndex = 0;
+  static const Color primaryColorDark = Color.fromRGBO(28, 38, 50, 1);
 
   @override
     Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
-        statusBarColor: Colors.black,
-        statusBarBrightness: Brightness.dark,
+        statusBarColor: primaryColorDark,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.light,
       ),
       child: Scaffold(
         bottomNavigationBar: BottomNavigationBar(
@@ -117,7 +119,8 @@ class _MyHomePageState extends State<MyHomePage> {
           type: BottomNavigationBarType.fixed,
           selectedFontSize: 12,
           unselectedFontSize: 10,
-          backgroundColor: Color.fromRGBO(17, 24, 32, 1),
+          //backgroundColor: Color.fromRGBO(17, 24, 32, 1),
+          backgroundColor: primaryColorDark,
           selectedItemColor: Color.fromRGBO(23, 208, 207, 1),
           unselectedItemColor: Color.fromRGBO(169, 163, 163, 1),
           showUnselectedLabels: true,
@@ -164,11 +167,11 @@ class _MyHomePageState extends State<MyHomePage> {
         break;
       case 2:
         setState(() => _isLoading = true);
-        _url = 'https://africanleadershipinstitution.com/user/dashboard';
+        _url = 'https://africanleadershipinstitution.com/blog';
         controller.loadUrl(_url);
         break;
       case 3:
-        _url = 'https://africanleadershipinstitution.com/user/certifications';
+        _url = 'https://africanleadershipinstitution.com/user/certificates';
         controller.loadUrl(_url);
         break;
       case 4:
@@ -176,6 +179,8 @@ class _MyHomePageState extends State<MyHomePage> {
         final result = showMenu(context: context,
             position: RelativeRect.fromLTRB(1000.0, 1000.0, 0.0, 0.0),
             items: <PopupMenuItem<String>>[
+              new PopupMenuItem<String>(
+                  child: const Text('Dashboard'), value: 'https://africanleadershipinstitution.com/user/dashboard'),
               new PopupMenuItem<String>(
                   child: const Text('About Us'), value: 'https://africanleadershipinstitution.com/about-us'),
               /*new PopupMenuItem<String>(
